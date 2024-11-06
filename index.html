@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trò Chơi Ghép Số Theo Thứ Tự</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+    #gameArea {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .number {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f7b2b7;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 20px;
+      user-select: none;
+    }
+    .dropZone {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      border-radius: 10px;
+      transition: background-color 0.3s;
+    }
+    .correct {
+      background-color: #8bc34a;
+      color: white;
+    }
+    .wrong {
+      background-color: #f44336;
+      animation: shake 0.3s ease;
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Trò Chơi Ghép Số</h1>
+<div id="gameArea">
+  <div id="dropZone1" class="dropZone"></div>
+  <div id="dropZone2" class="dropZone"></div>
+  <div id="dropZone3" class="dropZone"></div>
+  <div id="dropZone4" class="dropZone"></div>
+  <div id="dropZone5" class="dropZone"></div>
+</div>
+
+<div id="numberArea">
+  <div class="number" draggable="true" id="number1">1</div>
+  <div class="number" draggable="true" id="number2">2</div>
+  <div class="number" draggable="true" id="number3">3</div>
+  <div class="number" draggable="true" id="number4">4</div>
+  <div class="number" draggable="true" id="number5">5</div>
+</div>
+
+<div id="message">Kéo các con số vào vị trí đúng!</div>
+
+<script>
+  const numbers = document.querySelectorAll('.number');
+  const dropZones = document.querySelectorAll('.dropZone');
+  const message = document.getElementById('message');
+
+  let correctOrder = [1, 2, 3, 4, 5]; // Mảng lưu thứ tự đúng của các con số
+  let placedNumbers = [null, null, null, null, null]; // Lưu trữ các con số đã được thả vào vị trí
+
+  // Thêm sự kiện kéo cho các con số
+  numbers.forEach(number => {
+    number.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text', e.target.id);
+    });
+  });
+
+  // Thêm sự kiện thả vào các vùng nhận
+  dropZones.forEach((zone, index) => {
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    zone.addEventListener('drop', (e) => {
+      const numberId = e.dataTransfer.getData('text');
+      const numberElement = document.getElementById(numberId);
+      
+      if (placedNumbers[index] === null) {
+        placedNumbers[index] = parseInt(numberElement.textContent);
+        zone.textContent = numberElement.textContent;
+        numberElement.style.display = 'none';
+        
+        checkCorrectOrder();
+      } else {
+        // Nếu đã có số ở vùng này, đổi vị trí giữa các số
+        const temp = placedNumbers[index];
+        placedNumbers[index] = parseInt(numberElement.textContent);
+        zone.textContent = numberElement.textContent;
+        
+        const previousNumberElement = document.getElementById(`number${temp}`);
+        previousNumberElement.style.display = 'block';
+        previousNumberElement.style.left = zone.offsetLeft + 'px';
+        previousNumberElement.style.top = zone.offsetTop + 'px';
+        
+        checkCorrectOrder();
+      }
+    });
+  });
+
+  // Kiểm tra thứ tự đúng của các con số
+  function checkCorrectOrder() {
+    let isCorrect = true;
+
+    placedNumbers.forEach((number, index) => {
+      if (number !== correctOrder[index]) {
+        document.getElementById(`dropZone${index + 1}`).classList.add('wrong');
+        isCorrect = false;
+      } else {
+        document.getElementById(`dropZone${index + 1}`).classList.remove('wrong');
+        document.getElementById(`dropZone${index + 1}`).classList.add('correct');
+      }
+    });
+
+    if (isCorrect) {
+      message.textContent = "Chúc mừng! Bạn đã hoàn thành trò chơi!";
+      placedNumbers = [null, null, null, null, null];
+      setTimeout(() => {
+        dropZones.forEach(zone => zone.textContent = '');
+        numbers.forEach(number => number.style.display = 'block');
+        message.textContent = "Kéo các con số vào vị trí đúng!";
+      }, 2000);
+    }
+  }
+</script>
+
+</body>
+</html>
